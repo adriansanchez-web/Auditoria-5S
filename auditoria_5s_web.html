@@ -1,0 +1,707 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+<title>Auditoría 5S</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+<style>
+  :root{
+    --bg:#F3F2EC; --card:#FFFFFF; --ink:#16232F; --inkSoft:#5C6B76; --line:#DCD9CC;
+    --yellow:#F5B700; --yellowDark:#8A6400; --green:#1E8E5A; --greenBg:#E6F4ED;
+    --red:#D14343; --redBg:#FBEAEA; --amber:#E08A1E; --amberBg:#FCF0DD;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--bg);font-family:'Inter',sans-serif;color:var(--ink);}
+  #root{max-width:960px;margin:0 auto;padding:16px 16px 40px;}
+  .hazard{height:6px;border-radius:3px;margin:10px 0 18px;background-image:repeating-linear-gradient(45deg,var(--yellow) 0px,var(--yellow) 10px,var(--ink) 10px,var(--ink) 20px);opacity:.9;}
+  .display{font-family:'Barlow Condensed',sans-serif;font-weight:700;text-transform:uppercase;}
+  .label{font-size:11px;font-weight:700;color:var(--inkSoft);text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px;display:block;}
+  input,select,textarea{outline:none;font-family:'Inter',sans-serif;font-size:14px;border:1px solid var(--line);border-radius:7px;padding:9px 10px;width:100%;background:#fff;color:var(--ink);}
+  input:focus,select:focus,textarea:focus{border-color:var(--ink);}
+  button{cursor:pointer;font-family:'Inter',sans-serif;}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:18px;}
+  .kpi{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px 16px;flex:1 1 150px;min-width:150px;}
+  .kpi-label{font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--inkSoft);}
+  .kpi-value{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:28px;line-height:1.15;margin-top:2px;}
+  .kpi-sub{font-size:12px;color:var(--inkSoft);margin-top:2px;}
+  .tabs{display:flex;align-items:center;gap:4px;border-bottom:1px solid var(--line);margin-bottom:18px;flex-wrap:wrap;}
+  .tab-btn{display:flex;align-items:center;gap:7px;padding:9px 16px;border:none;border-bottom:3px solid transparent;background:transparent;font-family:'Barlow Condensed',sans-serif;font-size:16px;font-weight:700;letter-spacing:.02em;text-transform:uppercase;color:var(--inkSoft);}
+  .tab-btn.active{color:var(--ink);border-bottom-color:var(--yellow);}
+  .pill{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:999px;font-size:12px;font-weight:700;white-space:nowrap;}
+  .sec-title{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:19px;text-transform:uppercase;letter-spacing:.02em;}
+  .sec-sub{font-size:12.5px;color:var(--inkSoft);margin-top:1px;}
+  .accordion{margin-bottom:10px;border:1px solid var(--line);border-radius:10px;overflow:hidden;}
+  .accordion-head{width:100%;display:flex;align-items:center;justify-content:space-between;padding:11px 14px;background:#FAF9F5;border:none;cursor:pointer;text-align:left;}
+  .accordion-body{padding:10px 14px 14px;}
+  .qrow{padding:10px 0;border-top:1px solid var(--line);}
+  .qrow:first-child{border-top:none;}
+  .ans-btn{display:flex;align-items:center;gap:5px;padding:6px 12px;border-radius:7px;font-weight:700;font-size:13px;border:1px solid var(--line);background:#fff;color:var(--inkSoft);}
+  .ans-btn.yes.active{border:2px solid var(--green);background:var(--greenBg);color:var(--green);}
+  .ans-btn.no.active{border:2px solid var(--red);background:var(--redBg);color:var(--red);}
+  .nobox{margin-top:10px;padding:10px;background:var(--redBg);border-radius:8px;display:none;flex-direction:column;gap:10px;}
+  .thumb{position:relative;width:60px;height:60px;border-radius:7px;overflow:hidden;border:1px solid var(--line);}
+  .thumb img{width:100%;height:100%;object-fit:cover;cursor:zoom-in;}
+  .thumb button{position:absolute;top:2px;right:2px;width:18px;height:18px;border-radius:50%;border:none;background:rgba(22,35,47,.75);color:#fff;padding:0;font-size:11px;line-height:1;}
+  .addphoto{width:60px;height:60px;border-radius:7px;border:1.5px dashed var(--line);background:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;color:var(--inkSoft);font-size:9px;}
+  table{width:100%;border-collapse:collapse;font-size:13px;}
+  th{text-align:left;padding:8px;font-size:11px;text-transform:uppercase;letter-spacing:.04em;color:var(--inkSoft);}
+  td{padding:8px;border-top:1px solid var(--line);vertical-align:top;}
+  .empty{text-align:center;padding:50px 20px;color:var(--inkSoft);}
+  .spin{display:inline-block;animation:spin5s 1s linear infinite;}
+  @keyframes spin5s{to{transform:rotate(360deg);}}
+  .lightbox{position:fixed;inset:0;background:rgba(22,35,47,.85);display:flex;align-items:center;justify-content:center;z-index:9999;cursor:zoom-out;padding:20px;}
+  .lightbox img{max-width:90%;max-height:90%;border-radius:8px;}
+  .setup-screen{max-width:420px;margin:60px auto;padding:24px;background:#fff;border:1px solid var(--line);border-radius:12px;}
+  .btn-primary{padding:11px 22px;border-radius:8px;border:none;background:var(--ink);color:#fff;font-family:'Barlow Condensed',sans-serif;font-size:17px;font-weight:700;text-transform:uppercase;letter-spacing:.03em;}
+  .btn-ghost{padding:7px 12px;border-radius:7px;border:1px solid var(--line);background:#fff;color:var(--inkSoft);font-size:12.5px;font-weight:600;}
+  .msg-ok{margin-top:10px;display:flex;gap:8px;align-items:center;padding:9px 12px;background:var(--greenBg);color:var(--green);border-radius:8px;font-size:13px;font-weight:600;}
+  .msg-err{margin-top:10px;display:flex;gap:8px;align-items:center;padding:9px 12px;background:var(--redBg);color:var(--red);border-radius:8px;font-size:13px;font-weight:600;}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script>
+/* ======================= DATOS DEL FORMATO 5S ======================= */
+const QUESTIONS = [
+  { s:'1S', name:'1ra S · Seleccionar', color:'#D14343', items:[
+    {id:'q1', text:'¿La cantidad de materia prima o WIP es lo necesario para 1 solo turno?'},
+    {id:'q2', text:'¿El área está libre de artículos personales en áreas indefinidas?'},
+    {id:'q3', text:'¿El área está libre de artículos desordenados/sin uso/descompuestos/obsoletos o material no conforme?'},
+    {id:'q4', text:'¿Los pasillos se encuentran despejados?'},
+  ]},
+  { s:'2S', name:'2da S · Ordenar', color:'#E08A1E', items:[
+    {id:'q5', text:'¿Hay un lugar definido para los objetos necesarios?'},
+    {id:'q6', text:'¿Cada artículo se encuentra ubicado en el lugar definido?'},
+    {id:'q7', text:'¿Existen ayudas visuales para EPP?'},
+    {id:'q8', text:'¿Existen letreros o ayudas visuales para señalizar materiales, herramentales, etc?'},
+    {id:'q9', text:'¿Los extintores, alarmas y salidas de emergencia están despejadas?'},
+  ]},
+  { s:'3S', name:'3ra S · Limpiar e Inspeccionar', color:'#C9A100', items:[
+    {id:'q10', text:'¿Las marcas que delimitan los espacios están en buenas condiciones?'},
+    {id:'q11', text:'¿El área está libre de obstáculos que obstruyan las tareas de limpieza?'},
+    {id:'q12', text:'¿Los cables están bien organizados (cables de PC, conducto, bajadas...)?'},
+    {id:'q13', text:'¿El área está limpia (piso, escritorio, gavetas, maquinaria...)?'},
+    {id:'q14', text:'¿El equipo/mobiliario están en buenas condiciones?'},
+    {id:'q15', text:'¿Los pisos y paredes están limpios (mugre, tape, manchas, aceite...)?'},
+  ]},
+  { s:'4S', name:'4ta S · Estandarizar', color:'#1E8E5A', items:[
+    {id:'q16', text:'¿Son adecuadas las dimensiones de los lugares de almacenaje (gabinetes/soportes, etc.)?'},
+    {id:'q17', text:'¿Se implementó ya un estándar de limpieza?'},
+    {id:'q18', text:'¿Los estándares son fácilmente accesibles?'},
+  ]},
+  { s:'5S', name:'5ta S · Sostener o Autodisciplina', color:'#2E6FA7', items:[
+    {id:'q19', text:'¿El personal del área ha sido entrenado en 5S? (Preguntar a 1 colaborador)'},
+    {id:'q20', text:'¿Mejoró el nivel de 5S respecto a la última auditoría?'},
+  ]},
+];
+const ALL_ITEMS = QUESTIONS.flatMap(sec => sec.items.map(it => ({...it, s:sec.s, secName:sec.name})));
+const TOTAL_Q = ALL_ITEMS.length;
+const ADMIN_PIN = '5S2026';
+const ESTADOS = ['Pendiente','En proceso','Completado'];
+const ESTADO_COLOR = {'Pendiente':'var(--red)','En proceso':'var(--amber)','Completado':'var(--green)'};
+const ESTADO_BG = {'Pendiente':'var(--redBg)','En proceso':'var(--amberBg)','Completado':'var(--greenBg)'};
+
+/* ======================= UTILIDADES ======================= */
+function uid(){ return 'a_'+Date.now().toString(36)+'_'+Math.random().toString(36).slice(2,8); }
+function todayISO(){ return new Date().toISOString().slice(0,10); }
+function fmtDate(d){ if(!d) return '-'; const dt=new Date(d+'T00:00:00'); if(isNaN(dt)) return d; return dt.toLocaleDateString('es-MX',{day:'2-digit',month:'short',year:'numeric'}); }
+function scoreColor(s){ return s>=90?'var(--green)':s>=70?'var(--amber)':'var(--red)'; }
+function esc(str){ const d=document.createElement('div'); d.textContent=str==null?'':String(str); return d.innerHTML; }
+function computeScore(respuestas){
+  const total=respuestas.length; const si=respuestas.filter(r=>r.respuesta==='Si').length;
+  const overall= total? Math.round(si/total*100):0;
+  const byS={};
+  QUESTIONS.forEach(sec=>{ const items=respuestas.filter(r=>r.s===sec.s); const yes=items.filter(r=>r.respuesta==='Si').length; byS[sec.s]= items.length? Math.round(yes/items.length*100):0; });
+  return {overall, byS};
+}
+function fileToCompressedDataUrl(file, maxDim=1000, quality=0.62){
+  return new Promise((resolve,reject)=>{
+    const reader=new FileReader();
+    reader.onerror=()=>reject(new Error('No se pudo leer el archivo'));
+    reader.onload=(e)=>{
+      const img=new Image();
+      img.onerror=()=>reject(new Error('No se pudo procesar la imagen'));
+      img.onload=()=>{
+        let w=img.width, h=img.height;
+        if(w>h && w>maxDim){ h=Math.round(h*maxDim/w); w=maxDim; }
+        else if(h>=w && h>maxDim){ w=Math.round(w*maxDim/h); h=maxDim; }
+        const canvas=document.createElement('canvas'); canvas.width=w; canvas.height=h;
+        canvas.getContext('2d').drawImage(img,0,0,w,h);
+        resolve(canvas.toDataURL('image/jpeg', quality));
+      };
+      img.src=e.target.result;
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+/* ======================= CONEXIÓN A LA BASE DE DATOS (Apps Script) ======================= */
+const CONFIG = { apiUrl: localStorage.getItem('auditoria5s_apiUrl') || '' };
+async function apiGet(params){
+  const url = CONFIG.apiUrl + '?' + new URLSearchParams(params).toString();
+  const res = await fetch(url);
+  return res.json();
+}
+async function apiPost(payload){
+  const res = await fetch(CONFIG.apiUrl, { method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'}, body: JSON.stringify(payload) });
+  return res.json();
+}
+
+/* ======================= ESTADO GLOBAL ======================= */
+const state = { audits: [], loading: true, view: 'nueva', isAdmin: localStorage.getItem('auditoria5s_admin')==='1', fotosCache: {}, charts: {} };
+const form = { area:'', auditor:'', semana:'', fecha: todayISO(), answers:{}, openSec: QUESTIONS[0].s };
+ALL_ITEMS.forEach(it=>{ form.answers[it.id] = { respuesta:null, planAccion:'', responsable:'', fechaCompromiso:'', observaciones:'', fotos:[] }; });
+
+async function loadAudits(){
+  state.loading = true; renderShell();
+  try{
+    const r = await apiGet({ action:'listAudits' });
+    state.audits = r.ok ? r.audits : [];
+  }catch(e){ state.audits = []; }
+  state.loading = false; renderShell();
+}
+
+/* ======================= RENDER RAÍZ ======================= */
+function renderShell(){
+  const root = document.getElementById('root');
+  if(!CONFIG.apiUrl){ root.innerHTML = setupScreenHTML(); attachSetupHandlers(); return; }
+
+  const existingAreas = Array.from(new Set(state.audits.map(a=>a.area)));
+  const avgScore = state.audits.length ? Math.round(state.audits.reduce((s,a)=>s+a.score,0)/state.audits.length) : 0;
+  const openActions = state.audits.reduce((s,a)=> s + a.respuestas.filter(r=>r.respuesta==='No' && r.planAccion && r.estado!=='Completado').length, 0);
+
+  root.innerHTML = `
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:2px;">
+      <div style="width:40px;height:40px;border-radius:9px;background:var(--ink);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:20px;">🏭</div>
+      <div>
+        <div class="display" style="font-size:26px;color:var(--ink);line-height:1;">Auditoría 5S</div>
+        <div style="font-size:12.5px;color:var(--inkSoft);">Registro, base de datos y seguimiento de planes de acción</div>
+      </div>
+    </div>
+    <div class="hazard"></div>
+    ${state.loading ? `<div style="display:flex;align-items:center;gap:8px;color:var(--inkSoft);padding:30px 0;font-size:14px;"><span class="spin">⏳</span> Cargando datos guardados…</div>` : `
+      ${state.isAdmin ? `
+      <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:18px;">
+        <div class="kpi"><div class="kpi-label">Auditorías registradas</div><div class="kpi-value">${state.audits.length}</div></div>
+        <div class="kpi"><div class="kpi-label">Cumplimiento promedio</div><div class="kpi-value" style="color:${state.audits.length?scoreColor(avgScore):'var(--ink)'}">${state.audits.length?avgScore+'%':'-'}</div></div>
+        <div class="kpi"><div class="kpi-label">Acciones abiertas</div><div class="kpi-value" style="color:${openActions?'var(--amber)':'var(--green)'}">${openActions}</div></div>
+        <div class="kpi"><div class="kpi-label">Áreas auditadas</div><div class="kpi-value">${existingAreas.length}</div></div>
+      </div>` : ''}
+      <div class="tabs">
+        <button class="tab-btn ${state.view==='nueva'?'active':''}" data-tab="nueva">➕ Nueva auditoría</button>
+        ${state.isAdmin ? `<button class="tab-btn ${state.view==='historial'?'active':''}" data-tab="historial">🕘 Historial</button>` : ''}
+        ${state.isAdmin ? `<button class="tab-btn ${state.view==='analisis'?'active':''}" data-tab="analisis">📊 Análisis</button>` : ''}
+        ${state.isAdmin ? `<button class="tab-btn ${state.view==='acciones'?'active':''}" data-tab="acciones">✅ Plan de acción</button>` : ''}
+        <div id="adminGate" style="margin-left:auto;"></div>
+      </div>
+      <div class="card" id="content"></div>
+    `}
+  `;
+  if(state.loading) return;
+  renderAdminGate();
+  document.querySelectorAll('.tab-btn').forEach(btn=>{
+    btn.addEventListener('click', ()=>{ state.view = btn.dataset.tab; renderShell(); });
+  });
+  renderContent(existingAreas);
+}
+
+function renderContent(existingAreas){
+  const el = document.getElementById('content');
+  if(state.view==='nueva'){ renderNuevaAuditoria(el, existingAreas); }
+  else if(state.view==='historial' && state.isAdmin){ renderHistorial(el); }
+  else if(state.view==='analisis' && state.isAdmin){ renderAnalisis(el); }
+  else if(state.view==='acciones' && state.isAdmin){ renderAcciones(el); }
+  else { el.innerHTML = ''; }
+}
+
+/* ======================= PANTALLA DE CONFIGURACIÓN INICIAL ======================= */
+function setupScreenHTML(){
+  return `
+    <div class="setup-screen">
+      <div class="display" style="font-size:22px;">Configura tu app</div>
+      <div class="hazard" style="margin:8px 0 14px;"></div>
+      <p style="font-size:13.5px;color:var(--inkSoft);line-height:1.5;">Pega aquí la URL de tu Google Apps Script (termina en <b>/exec</b>). Solo se pide una vez por dispositivo.</p>
+      <label class="label">URL del Web App</label>
+      <input id="apiUrlInput" type="text" placeholder="https://script.google.com/macros/s/XXXX/exec" style="margin-bottom:10px;" />
+      <button id="saveApiUrl" class="btn-primary" style="width:100%;">Guardar y continuar</button>
+      <div id="setupErr"></div>
+    </div>
+  `;
+}
+function attachSetupHandlers(){
+  document.getElementById('saveApiUrl').addEventListener('click', ()=>{
+    const val = document.getElementById('apiUrlInput').value.trim();
+    if(!val.startsWith('http')){
+      document.getElementById('setupErr').innerHTML = `<div class="msg-err">⚠️ Pega una URL válida de Apps Script.</div>`;
+      return;
+    }
+    localStorage.setItem('auditoria5s_apiUrl', val);
+    CONFIG.apiUrl = val;
+    loadAudits();
+  });
+}
+
+/* ======================= ACCESO ADMINISTRADOR ======================= */
+function renderAdminGate(){
+  const el = document.getElementById('adminGate');
+  if(state.isAdmin){
+    el.innerHTML = `<button class="btn-ghost" id="lockBtn">🔓 Administrador · Salir</button>`;
+    document.getElementById('lockBtn').addEventListener('click', ()=>{
+      state.isAdmin = false; localStorage.setItem('auditoria5s_admin','0'); state.view='nueva'; renderShell();
+    });
+    return;
+  }
+  el.innerHTML = `<button class="btn-ghost" id="openPin">🔒 Acceso administrador</button>`;
+  document.getElementById('openPin').addEventListener('click', ()=>{
+    el.innerHTML = `
+      <div style="display:flex;align-items:center;gap:6px;position:relative;">
+        <input id="pinInput" type="password" placeholder="PIN" style="width:90px;padding:7px 9px;" />
+        <button class="btn-primary" style="padding:7px 12px;font-size:12.5px;" id="pinSubmit">Entrar</button>
+        <button class="btn-ghost" id="pinCancel" style="padding:7px 9px;">✕</button>
+        <div id="pinErr" style="position:absolute;top:110%;right:0;font-size:11.5px;color:var(--red);white-space:nowrap;"></div>
+      </div>`;
+    const submit = ()=>{
+      const v = document.getElementById('pinInput').value;
+      if(v===ADMIN_PIN){ state.isAdmin=true; localStorage.setItem('auditoria5s_admin','1'); renderShell(); }
+      else{ document.getElementById('pinErr').textContent='PIN incorrecto'; }
+    };
+    document.getElementById('pinSubmit').addEventListener('click', submit);
+    document.getElementById('pinInput').addEventListener('keydown', e=>{ if(e.key==='Enter') submit(); });
+    document.getElementById('pinCancel').addEventListener('click', renderAdminGate);
+    document.getElementById('pinInput').focus();
+  });
+}
+
+/* ======================= NUEVA AUDITORÍA ======================= */
+function renderNuevaAuditoria(el, existingAreas){
+  el.innerHTML = `
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-bottom:8px;">
+      <div><label class="label">🏢 Área</label><input id="f_area" list="areasList" value="${esc(form.area)}" placeholder="Ej. Extrusión Línea 3" />
+        <datalist id="areasList">${existingAreas.map(a=>`<option value="${esc(a)}">`).join('')}</datalist></div>
+      <div><label class="label">🧑 Auditor</label><input id="f_auditor" value="${esc(form.auditor)}" placeholder="Nombre del auditor" /></div>
+      <div><label class="label">Semana</label><input id="f_semana" value="${esc(form.semana)}" placeholder="Ej. SEM 28" /></div>
+      <div><label class="label">📅 Fecha</label><input id="f_fecha" type="date" value="${form.fecha}" /></div>
+    </div>
+    <div class="hazard"></div>
+    <div id="sections"></div>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-top:16px;flex-wrap:wrap;gap:10px;">
+      <div id="progressTxt" style="font-size:13px;color:var(--inkSoft);"></div>
+      <button class="btn-primary" id="submitBtn" style="display:flex;align-items:center;gap:8px;">📋 Guardar auditoría</button>
+    </div>
+    <div id="formMsg"></div>
+  `;
+  document.getElementById('f_area').addEventListener('input', e=> form.area = e.target.value);
+  document.getElementById('f_auditor').addEventListener('input', e=> form.auditor = e.target.value);
+  document.getElementById('f_semana').addEventListener('input', e=> form.semana = e.target.value);
+  document.getElementById('f_fecha').addEventListener('input', e=> form.fecha = e.target.value);
+
+  const sections = document.getElementById('sections');
+  sections.innerHTML = QUESTIONS.map(sec => sectionHTML(sec)).join('');
+  QUESTIONS.forEach(sec => attachSectionHandlers(sec));
+  updateProgress();
+
+  document.getElementById('submitBtn').addEventListener('click', submitAudit);
+}
+
+function sectionHTML(sec){
+  const answeredCount = sec.items.filter(it=>form.answers[it.id].respuesta).length;
+  const isOpen = form.openSec === sec.s;
+  return `
+    <div class="accordion" data-sec="${sec.s}">
+      <button class="accordion-head" data-toggle="${sec.s}">
+        <span style="display:flex;align-items:center;gap:10px;">
+          <span style="width:8px;height:8px;border-radius:2px;background:${sec.color};display:inline-block;"></span>
+          <span class="display" style="font-size:18px;color:var(--ink);">${esc(sec.name)}</span>
+          <span style="font-size:12px;color:var(--inkSoft);" data-count="${sec.s}">(${answeredCount}/${sec.items.length})</span>
+        </span>
+        <span>${isOpen ? '▲' : '▼'}</span>
+      </button>
+      <div class="accordion-body" data-body="${sec.s}" style="display:${isOpen?'block':'none'};">
+        ${sec.items.map(it=>questionRowHTML(it)).join('')}
+      </div>
+    </div>
+  `;
+}
+
+function questionRowHTML(it){
+  return `
+  <div class="qrow" data-qrow="${it.id}">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap;">
+      <div style="font-size:14px;color:var(--ink);flex:1 1 280px;">${esc(it.text)}</div>
+      <div style="display:flex;gap:6px;flex-shrink:0;">
+        <button class="ans-btn yes" data-ans="${it.id}" data-val="Si">✔ Sí</button>
+        <button class="ans-btn no" data-ans="${it.id}" data-val="No">✖ No</button>
+      </div>
+    </div>
+    <div class="nobox" data-nobox="${it.id}">
+      <div>
+        <label class="label">Comentario: describe la condición no aceptable</label>
+        <textarea rows="2" data-obs="${it.id}" placeholder="Ej. Se encontró material obsoleto sobre el pasillo principal, bloqueando la salida de emergencia."></textarea>
+      </div>
+      <div>
+        <label class="label">Evidencia fotográfica <span data-photocount="${it.id}"></span></label>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;" data-photolist="${it.id}"></div>
+        <input type="file" accept="image/*" capture="environment" multiple style="display:none;" data-photoinput="${it.id}" />
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;">
+        <div><label class="label">Plan de acción</label><input data-plan="${it.id}" placeholder="Acción correctiva" /></div>
+        <div><label class="label">Responsable</label><input data-resp="${it.id}" placeholder="Nombre" /></div>
+        <div><label class="label">Fecha compromiso</label><input type="date" data-fechac="${it.id}" /></div>
+      </div>
+    </div>
+  </div>`;
+}
+
+function attachSectionHandlers(sec){
+  const head = document.querySelector(`[data-toggle="${sec.s}"]`);
+  head.addEventListener('click', ()=>{
+    const body = document.querySelector(`[data-body="${sec.s}"]`);
+    const isOpen = body.style.display === 'block';
+    form.openSec = isOpen ? null : sec.s;
+    body.style.display = isOpen ? 'none' : 'block';
+    head.querySelector('span:last-child').textContent = isOpen ? '▼' : '▲';
+  });
+  sec.items.forEach(it => attachQuestionHandlers(it));
+}
+
+function attachQuestionHandlers(it){
+  const yesBtn = document.querySelector(`[data-ans="${it.id}"][data-val="Si"]`);
+  const noBtn = document.querySelector(`[data-ans="${it.id}"][data-val="No"]`);
+  const nobox = document.querySelector(`[data-nobox="${it.id}"]`);
+  function setAnswer(val){
+    form.answers[it.id].respuesta = val;
+    yesBtn.classList.toggle('active', val==='Si');
+    noBtn.classList.toggle('active', val==='No');
+    nobox.style.display = val==='No' ? 'flex' : 'none';
+    updateSectionCount(it.s);
+    updateProgress();
+  }
+  yesBtn.addEventListener('click', ()=> setAnswer('Si'));
+  noBtn.addEventListener('click', ()=> setAnswer('No'));
+  document.querySelector(`[data-obs="${it.id}"]`).addEventListener('input', e=> form.answers[it.id].observaciones = e.target.value);
+  document.querySelector(`[data-plan="${it.id}"]`).addEventListener('input', e=> form.answers[it.id].planAccion = e.target.value);
+  document.querySelector(`[data-resp="${it.id}"]`).addEventListener('input', e=> form.answers[it.id].responsable = e.target.value);
+  document.querySelector(`[data-fechac="${it.id}"]`).addEventListener('input', e=> form.answers[it.id].fechaCompromiso = e.target.value);
+
+  const photoInput = document.querySelector(`[data-photoinput="${it.id}"]`);
+  const photoList = document.querySelector(`[data-photolist="${it.id}"]`);
+  renderPhotoList(it.id);
+  photoInput.addEventListener('change', async (e)=>{
+    const files = Array.from(e.target.files||[]).slice(0, Math.max(0, 4 - form.answers[it.id].fotos.length));
+    for(const f of files){
+      try{ const dataUrl = await fileToCompressedDataUrl(f); form.answers[it.id].fotos.push({id:uid(), dataUrl}); }catch(err){}
+    }
+    e.target.value=''; renderPhotoList(it.id);
+  });
+  photoList.addEventListener('click', (e)=>{
+    if(e.target.dataset.addphoto) photoInput.click();
+    if(e.target.dataset.removephoto){
+      form.answers[it.id].fotos = form.answers[it.id].fotos.filter(p=>p.id!==e.target.dataset.removephoto);
+      renderPhotoList(it.id);
+    }
+    if(e.target.tagName==='IMG') showLightbox(e.target.src);
+  });
+}
+
+function renderPhotoList(qId){
+  const list = document.querySelector(`[data-photolist="${qId}"]`);
+  const fotos = form.answers[qId].fotos;
+  const countEl = document.querySelector(`[data-photocount="${qId}"]`);
+  if(countEl) countEl.textContent = fotos.length ? `(${fotos.length}/4)` : '';
+  list.innerHTML = fotos.map(p=>`
+    <div class="thumb"><img src="${p.dataUrl}" alt="Evidencia" /><button data-removephoto="${p.id}">✕</button></div>
+  `).join('') + (fotos.length<4 ? `<div class="addphoto" data-addphoto="1">📷<span>Agregar</span></div>` : '');
+}
+
+function showLightbox(src){
+  const box = document.createElement('div');
+  box.className='lightbox';
+  box.innerHTML = `<img src="${src}" alt="Evidencia ampliada" />`;
+  box.addEventListener('click', ()=> box.remove());
+  document.body.appendChild(box);
+}
+
+function updateSectionCount(s){
+  const sec = QUESTIONS.find(x=>x.s===s);
+  const count = sec.items.filter(it=>form.answers[it.id].respuesta).length;
+  const el = document.querySelector(`[data-count="${s}"]`);
+  if(el) el.textContent = `(${count}/${sec.items.length})`;
+}
+function updateProgress(){
+  const answered = ALL_ITEMS.filter(it=>form.answers[it.id].respuesta).length;
+  const withAns = ALL_ITEMS.map(it=>form.answers[it.id]).filter(a=>a.respuesta);
+  const preview = withAns.length ? Math.round(withAns.filter(a=>a.respuesta==='Si').length/withAns.length*100) : null;
+  const el = document.getElementById('progressTxt');
+  if(el) el.innerHTML = `${answered}/${TOTAL_Q} respondidas` + (preview!==null ? ` · Cumplimiento parcial: <b style="color:${scoreColor(preview)}">${preview}%</b>` : '');
+}
+
+async function submitAudit(){
+  const msg = document.getElementById('formMsg');
+  msg.innerHTML='';
+  if(!form.area.trim() || !form.auditor.trim() || !form.fecha){
+    msg.innerHTML = `<div class="msg-err">⚠️ Completa Área, Auditor y Fecha antes de guardar.</div>`; return;
+  }
+  const answeredCount = ALL_ITEMS.filter(it=>form.answers[it.id].respuesta).length;
+  if(answeredCount < TOTAL_Q){
+    msg.innerHTML = `<div class="msg-err">⚠️ Faltan ${TOTAL_Q-answeredCount} de ${TOTAL_Q} reactivos por responder.</div>`; return;
+  }
+  const missingPlan = ALL_ITEMS.filter(it => form.answers[it.id].respuesta==='No' && (!form.answers[it.id].planAccion.trim() || !form.answers[it.id].responsable.trim()));
+  if(missingPlan.length>0){
+    msg.innerHTML = `<div class="msg-err">⚠️ Define plan de acción y responsable para los ${missingPlan.length} reactivo(s) marcados como "No".</div>`; return;
+  }
+  const btn = document.getElementById('submitBtn');
+  btn.disabled = true; btn.textContent = 'Guardando…';
+
+  const respuestas = ALL_ITEMS.map(it => ({
+    id: it.id, text: it.text, s: it.s, secName: it.secName,
+    respuesta: form.answers[it.id].respuesta,
+    planAccion: form.answers[it.id].planAccion.trim(),
+    responsable: form.answers[it.id].responsable.trim(),
+    fechaCompromiso: form.answers[it.id].fechaCompromiso,
+    observaciones: form.answers[it.id].observaciones.trim(),
+    estado: form.answers[it.id].respuesta==='No' ? 'Pendiente' : null,
+    fotoCount: form.answers[it.id].fotos.length,
+  }));
+  const {overall, byS} = computeScore(respuestas);
+  const audit = { id: uid(), area: form.area.trim(), auditor: form.auditor.trim(), semana: form.semana.trim(), fecha: form.fecha, score: overall, scoreByS: byS, respuestas, createdAt: new Date().toISOString() };
+
+  try{
+    const r = await apiPost({ action:'saveAudit', audit });
+    if(!r.ok) throw new Error(r.error||'Error al guardar');
+    for(const it of ALL_ITEMS){
+      const fotos = form.answers[it.id].fotos;
+      for(const f of fotos){
+        await apiPost({ action:'savePhoto', auditId: audit.id, qId: it.id, base64: f.dataUrl, mimeType: 'image/jpeg' });
+      }
+    }
+    state.audits.push(audit);
+    resetForm();
+    msg.innerHTML = `<div class="msg-ok">✅ Auditoría guardada correctamente.</div>`;
+    setTimeout(()=>{ if(document.getElementById('formMsg')) document.getElementById('formMsg').innerHTML=''; }, 4000);
+    if(state.isAdmin){ state.view='historial'; renderShell(); return; }
+  }catch(e){
+    msg.innerHTML = `<div class="msg-err">⚠️ No se pudo guardar la auditoría: ${esc(e.message)}</div>`;
+  }
+  btn.disabled=false; btn.innerHTML='📋 Guardar auditoría';
+  renderContent(Array.from(new Set(state.audits.map(a=>a.area))));
+}
+
+function resetForm(){
+  form.area=''; form.auditor=''; form.semana=''; form.fecha=todayISO(); form.openSec=QUESTIONS[0].s;
+  ALL_ITEMS.forEach(it=>{ form.answers[it.id] = { respuesta:null, planAccion:'', responsable:'', fechaCompromiso:'', observaciones:'', fotos:[] }; });
+}
+
+/* ======================= HISTORIAL ======================= */
+let historialState = { filterArea:'Todas', expanded:null };
+function renderHistorial(el){
+  const areas = ['Todas', ...Array.from(new Set(state.audits.map(a=>a.area)))];
+  const filtered = state.audits.filter(a=> historialState.filterArea==='Todas' || a.area===historialState.filterArea)
+    .slice().sort((a,b)=> (b.fecha||'').localeCompare(a.fecha||''));
+
+  if(state.audits.length===0){ el.innerHTML = emptyHTML('Aún no hay auditorías registradas.'); return; }
+
+  el.innerHTML = `
+    <div style="display:flex;gap:8px;align-items:center;margin-bottom:14px;">
+      🔎 <select id="histFilter">${areas.map(a=>`<option ${a===historialState.filterArea?'selected':''}>${esc(a)}</option>`).join('')}</select>
+      <span style="font-size:13px;color:var(--inkSoft);">${filtered.length} auditoría(s)</span>
+    </div>
+    <div id="histList" style="display:flex;flex-direction:column;gap:8px;"></div>
+  `;
+  document.getElementById('histFilter').addEventListener('change', e=>{ historialState.filterArea=e.target.value; renderHistorial(el); });
+  const list = document.getElementById('histList');
+  list.innerHTML = filtered.map(a => historialCardHTML(a)).join('');
+  filtered.forEach(a=>{
+    document.querySelector(`[data-histhead="${a.id}"]`).addEventListener('click', ()=> toggleHistExpand(a));
+    const delBtn = document.querySelector(`[data-histdel="${a.id}"]`);
+    if(delBtn) delBtn.addEventListener('click', async (e)=>{ e.stopPropagation(); if(confirm('¿Eliminar esta auditoría?')){ await apiPost({action:'deleteAudit', id:a.id}); state.audits = state.audits.filter(x=>x.id!==a.id); renderHistorial(el); } });
+  });
+}
+function historialCardHTML(a){
+  const isOpen = historialState.expanded === a.id;
+  return `
+    <div class="accordion">
+      <div data-histhead="${a.id}" style="display:flex;align-items:center;justify-content:space-between;padding:12px 14px;cursor:pointer;flex-wrap:wrap;gap:10px;">
+        <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap;">
+          <div style="width:44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:${scoreColor(a.score)}22;color:${scoreColor(a.score)};font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:15px;">${a.score}%</div>
+          <div><div style="font-weight:700;font-size:14px;">${esc(a.area)}</div><div style="font-size:12px;color:var(--inkSoft);">${esc(a.auditor)} · ${esc(a.semana||'s/n')} · ${fmtDate(a.fecha)}</div></div>
+        </div>
+        <div style="display:flex;gap:10px;align-items:center;">
+          <button data-histdel="${a.id}" style="border:none;background:transparent;color:var(--inkSoft);">🗑</button>
+          <span>${isOpen?'▲':'▼'}</span>
+        </div>
+      </div>
+      ${isOpen ? `<div style="padding:4px 14px 14px;border-top:1px solid var(--line);" id="histDetail-${a.id}">Cargando…</div>` : ''}
+    </div>
+  `;
+}
+async function toggleHistExpand(a){
+  historialState.expanded = historialState.expanded===a.id ? null : a.id;
+  renderHistorial(document.getElementById('content'));
+  if(historialState.expanded===a.id){
+    let fotos = state.fotosCache[a.id];
+    if(!fotos){ const r = await apiGet({action:'getFotos', auditId:a.id}); fotos = r.ok ? r.fotos : {}; state.fotosCache[a.id]=fotos; }
+    const detail = document.getElementById(`histDetail-${a.id}`);
+    if(!detail) return;
+    detail.innerHTML = `
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin:10px 0;">
+        ${QUESTIONS.map(sec=>`<span class="pill" style="background:${sec.color}22;color:${sec.color};">${sec.s} ${a.scoreByS[sec.s]??'-'}%</span>`).join('')}
+      </div>
+      <table><tbody>
+      ${a.respuestas.map(r=>`
+        <tr>
+          <td style="width:26px;">${r.respuesta==='Si'?'✅':'❌'}</td>
+          <td>${esc(r.text)}
+            ${r.respuesta==='No' && r.observaciones ? `<div style="margin-top:4px;color:var(--inkSoft);font-style:italic;">${esc(r.observaciones)}</div>`:''}
+            ${r.respuesta==='No' && r.fotoCount>0 ? `<div style="display:flex;gap:6px;margin-top:6px;flex-wrap:wrap;">${(fotos[r.id]||[]).map(f=>`<img src="${f.url}" data-lightbox="1" style="width:48px;height:48px;object-fit:cover;border-radius:6px;border:1px solid var(--line);cursor:zoom-in;">`).join('')}</div>`:''}
+          </td>
+          <td style="min-width:160px;color:var(--inkSoft);">${r.respuesta==='No' && r.planAccion ? `<b>Plan:</b> ${esc(r.planAccion)} · ${esc(r.responsable)} ${r.fechaCompromiso?('· '+fmtDate(r.fechaCompromiso)):''}` : ''}</td>
+        </tr>`).join('')}
+      </tbody></table>
+    `;
+    detail.querySelectorAll('img[data-lightbox]').forEach(img=> img.addEventListener('click', ()=> showLightbox(img.src)));
+  }
+}
+function emptyHTML(text){ return `<div class="empty">🏭<div style="margin-top:10px;">${esc(text)}</div></div>`; }
+
+/* ======================= ANÁLISIS ======================= */
+let analisisFilter = 'Todas';
+function renderAnalisis(el){
+  const areas = ['Todas', ...Array.from(new Set(state.audits.map(a=>a.area)))];
+  const filtered = state.audits.filter(a=> analisisFilter==='Todas' || a.area===analisisFilter);
+  if(state.audits.length===0){ el.innerHTML = emptyHTML('Registra auditorías para generar el Pareto, histograma y tendencia.'); return; }
+
+  el.innerHTML = `
+    <div style="display:flex;gap:8px;align-items:center;margin-bottom:16px;">🔎 <select id="anFilter">${areas.map(a=>`<option ${a===analisisFilter?'selected':''}>${esc(a)}</option>`).join('')}</select></div>
+    <div class="sec-title">Pareto de incumplimientos</div>
+    <div class="sec-sub">Reactivos con más 'No', % del total de fallas y % acumulado (regla 80/20)</div>
+    <div id="paretoWrap" style="height:320px;margin:10px 0 26px;"><canvas id="paretoChart"></canvas></div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:20px;margin-bottom:26px;">
+      <div><div class="sec-title">Cumplimiento por S</div><div class="sec-sub">% de 'Sí' promedio en cada pilar</div><div style="height:240px;margin-top:10px;"><canvas id="catChart"></canvas></div></div>
+      <div><div class="sec-title">Histograma de resultados</div><div class="sec-sub">Auditorías por rango de calificación</div><div style="height:240px;margin-top:10px;"><canvas id="histChart"></canvas></div></div>
+    </div>
+    <div class="sec-title">Tendencia de cumplimiento</div>
+    <div class="sec-sub">Calificación global en orden cronológico</div>
+    <div style="height:260px;margin-top:10px;"><canvas id="trendChart"></canvas></div>
+  `;
+  document.getElementById('anFilter').addEventListener('change', e=>{ analisisFilter=e.target.value; renderAnalisis(el); });
+  drawAnalisisCharts(filtered);
+}
+function drawAnalisisCharts(filtered){
+  Object.values(state.charts).forEach(c=>c && c.destroy());
+  const counts = {};
+  ALL_ITEMS.forEach(it=> counts[it.id] = { text: it.text, count: 0 });
+  filtered.forEach(a=> a.respuestas.forEach(r=>{ if(r.respuesta==='No') counts[r.id].count++; }));
+  const arr = Object.values(counts).filter(c=>c.count>0).sort((a,b)=>b.count-a.count).slice(0,10);
+  const totalDefects = arr.reduce((s,c)=>s+c.count,0) || 1;
+  let acc = 0;
+  const paretoLabels = arr.map(c=> c.text.length>28 ? c.text.slice(0,28)+'…' : c.text);
+  const paretoPct = arr.map(c=> Math.round(c.count/totalDefects*1000)/10);
+  const paretoCum = paretoPct.map(p=>{ acc+=p; return Math.min(100, Math.round(acc*10)/10); });
+
+  if(arr.length>0){
+    state.charts.pareto = new Chart(document.getElementById('paretoChart'), {
+      data: { labels: paretoLabels, datasets: [
+        { type:'bar', label:'% de fallas', data: paretoPct, backgroundColor:'#E08A1E', order:2 },
+        { type:'line', label:'% acumulado', data: paretoCum, borderColor:'#16232F', backgroundColor:'#16232F', tension:.3, order:1 },
+      ]},
+      options: { responsive:true, maintainAspectRatio:false, scales:{ y:{ min:0, max:100, ticks:{ callback:v=>v+'%' } }, x:{ ticks:{ font:{size:9}, maxRotation:60, minRotation:40 } } } },
+    });
+  } else {
+    document.getElementById('paretoWrap').innerHTML = emptyHTML("No hay reactivos marcados como 'No' en el filtro seleccionado.");
+  }
+
+  const catLabels = QUESTIONS.map(s=>s.s);
+  const catData = QUESTIONS.map(sec=>{
+    const vals = filtered.map(a=>a.scoreByS[sec.s]).filter(v=>typeof v==='number');
+    return vals.length ? Math.round(vals.reduce((s,v)=>s+v,0)/vals.length) : 0;
+  });
+  state.charts.cat = new Chart(document.getElementById('catChart'), {
+    type:'bar', data:{ labels: catLabels, datasets:[{ label:'Cumplimiento', data: catData, backgroundColor: QUESTIONS.map(s=>s.color) }] },
+    options:{ responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}}, scales:{ y:{min:0,max:100, ticks:{callback:v=>v+'%'}} } },
+  });
+
+  const buckets = [ {name:'0-59',min:0,max:59,count:0}, {name:'60-69',min:60,max:69,count:0}, {name:'70-79',min:70,max:79,count:0}, {name:'80-89',min:80,max:89,count:0}, {name:'90-100',min:90,max:100,count:0} ];
+  filtered.forEach(a=>{ const b=buckets.find(b=>a.score>=b.min && a.score<=b.max); if(b) b.count++; });
+  state.charts.hist = new Chart(document.getElementById('histChart'), {
+    type:'bar', data:{ labels: buckets.map(b=>b.name), datasets:[{ label:'Auditorías', data: buckets.map(b=>b.count), backgroundColor:'#16232F' }] },
+    options:{ responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}}, scales:{ y:{beginAtZero:true, ticks:{stepSize:1}} } },
+  });
+
+  const trend = filtered.slice().sort((a,b)=>(a.fecha||'').localeCompare(b.fecha||''));
+  state.charts.trend = new Chart(document.getElementById('trendChart'), {
+    type:'line', data:{ labels: trend.map(a=>fmtDate(a.fecha)), datasets:[{ label:'Cumplimiento', data: trend.map(a=>a.score), borderColor:'#8A6400', backgroundColor:'#8A6400', tension:.3 }] },
+    options:{ responsive:true, maintainAspectRatio:false, scales:{ y:{min:0,max:100, ticks:{callback:v=>v+'%'}} } },
+  });
+}
+
+/* ======================= PLAN DE ACCIÓN ======================= */
+let accionesFilter = { estado:'Todas', area:'Todas' };
+function renderAcciones(el){
+  const items = [];
+  state.audits.forEach(a=> a.respuestas.forEach(r=>{
+    if(r.respuesta==='No' && r.planAccion){
+      items.push({ auditId:a.id, qId:r.id, area:a.area, s:r.s, text:r.text, planAccion:r.planAccion, responsable:r.responsable, fechaCompromiso:r.fechaCompromiso, estado:r.estado||'Pendiente', fotoCount:r.fotoCount||0 });
+    }
+  }));
+  if(items.length===0){ el.innerHTML = emptyHTML("No hay planes de acción registrados."); return; }
+  const areas = ['Todas', ...Array.from(new Set(items.map(i=>i.area)))];
+  const today = todayISO();
+  const filtered = items.filter(i => (accionesFilter.estado==='Todas'||i.estado===accionesFilter.estado) && (accionesFilter.area==='Todas'||i.area===accionesFilter.area))
+    .sort((a,b)=> (a.fechaCompromiso||'9999').localeCompare(b.fechaCompromiso||'9999'));
+  const abiertas = items.filter(i=>i.estado!=='Completado').length;
+  const vencidas = items.filter(i=>i.estado!=='Completado' && i.fechaCompromiso && i.fechaCompromiso<today).length;
+
+  el.innerHTML = `
+    <div style="display:flex;gap:12px;margin-bottom:18px;flex-wrap:wrap;">
+      <div class="kpi"><div class="kpi-label">Acciones totales</div><div class="kpi-value">${items.length}</div></div>
+      <div class="kpi"><div class="kpi-label">Abiertas</div><div class="kpi-value" style="color:var(--amber)">${abiertas}</div></div>
+      <div class="kpi"><div class="kpi-label">Vencidas</div><div class="kpi-value" style="color:var(--red)">${vencidas}</div></div>
+    </div>
+    <div style="display:flex;gap:8px;align-items:center;margin-bottom:12px;flex-wrap:wrap;">
+      🔎 <select id="accEstado"><option>Todas</option>${ESTADOS.map(e=>`<option ${e===accionesFilter.estado?'selected':''}>${e}</option>`).join('')}</select>
+      <select id="accArea">${areas.map(a=>`<option ${a===accionesFilter.area?'selected':''}>${esc(a)}</option>`).join('')}</select>
+      <span style="font-size:13px;color:var(--inkSoft);">${filtered.length} acción(es)</span>
+    </div>
+    <div style="overflow-x:auto;">
+      <table style="min-width:720px;">
+        <thead><tr><th>Área</th><th>Pilar</th><th>Hallazgo</th><th>Plan de acción</th><th>Responsable</th><th>Compromiso</th><th>Estado</th></tr></thead>
+        <tbody>${filtered.map(i=>accionRowHTML(i, today)).join('')}</tbody>
+      </table>
+    </div>
+  `;
+  document.getElementById('accEstado').addEventListener('change', e=>{ accionesFilter.estado=e.target.value; renderAcciones(el); });
+  document.getElementById('accArea').addEventListener('change', e=>{ accionesFilter.area=e.target.value; renderAcciones(el); });
+  filtered.forEach(i=>{
+    document.querySelector(`[data-estadosel="${i.auditId}_${i.qId}"]`).addEventListener('change', async (e)=>{
+      const estado = e.target.value;
+      await apiPost({ action:'updateEstado', auditId:i.auditId, qId:i.qId, estado });
+      const audit = state.audits.find(a=>a.id===i.auditId);
+      if(audit){ audit.respuestas = audit.respuestas.map(r=> r.id===i.qId ? {...r, estado} : r); }
+      renderAcciones(el);
+    });
+  });
+}
+function accionRowHTML(i, today){
+  const sec = QUESTIONS.find(s=>s.s===i.s);
+  const vencida = i.estado!=='Completado' && i.fechaCompromiso && i.fechaCompromiso<today;
+  return `<tr>
+    <td style="font-weight:600;">${esc(i.area)}</td>
+    <td><span class="pill" style="background:${sec.color}22;color:${sec.color};">${i.s}</span></td>
+    <td style="max-width:220px;">${esc(i.text)} ${i.fotoCount>0?`<span style="color:var(--inkSoft);font-size:11px;">📷${i.fotoCount}</span>`:''}</td>
+    <td style="max-width:200px;color:var(--inkSoft);">${esc(i.planAccion)}</td>
+    <td style="color:var(--inkSoft);">${esc(i.responsable||'-')}</td>
+    <td style="color:${vencida?'var(--red)':'var(--inkSoft)'};font-weight:${vencida?'700':'400'};">${i.fechaCompromiso?fmtDate(i.fechaCompromiso):'-'}${vencida?' · vencida':''}</td>
+    <td><select data-estadosel="${i.auditId}_${i.qId}" style="padding:5px 8px;border-radius:6px;border:none;font-weight:700;font-size:12px;background:${ESTADO_BG[i.estado]};color:${ESTADO_COLOR[i.estado]};">
+      ${ESTADOS.map(e=>`<option value="${e}" ${e===i.estado?'selected':''}>${e}</option>`).join('')}
+    </select></td>
+  </tr>`;
+}
+
+/* ======================= INICIO ======================= */
+if(CONFIG.apiUrl){ loadAudits(); } else { renderShell(); }
+</script>
+</body>
+</html>
